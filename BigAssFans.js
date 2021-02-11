@@ -3,7 +3,7 @@ const EventEmitter = require("events")
 
 class FanController extends EventEmitter {
     constructor() {
-        super()
+        super() // initializes functions for event listeners from EventEmitter
         this.socket.bind(this.fanPort)
         this.socket.on("listening", this.#socketOpen.bind(this))
         this.socket.on("message", this.socketMessage.bind(this))
@@ -46,10 +46,14 @@ class FanController extends EventEmitter {
 
     socketMessage(payload, sender) {
         let message = String(payload)
-        if (message.match(/^\<.*\>$/)) return // Filters Out Messages That Look Like "<command here>". Only Command Packets Have < >
+        
+        if (!message.match(/^\(.*\)$/)) return // Only allows messages with the stucture "( stuff here )". This is so random packets and command packets dont get received
+        console.log(message)
         let splitMessage = message.slice(1, -1).split(";")
         let fanName = splitMessage.shift()
         if (splitMessage[0] === "ERROR") return this.fanError(fanName, splitMessage[1])
+
+        //maybe rework and get rid of responsFromFan
         if (fanName in this.knownFans) { //Searches Known Fans By Name And If Found, Sends Command To Fan Handler
             this.responseFromFan[fanName](splitMessage)
         } else {
@@ -58,7 +62,7 @@ class FanController extends EventEmitter {
         
         
         
-        console.log(`server got: "${message}" from ${sender.address}:${sender.port}`)
+       
     }
 
     #socketError(error) {
@@ -66,11 +70,11 @@ class FanController extends EventEmitter {
     }
 }
 
-exports.FanController = FanController
 
 
 
-class BigAssFan {
+
+class BigAssFan { //extend eventEmitter?
     constructor (name, mac, address, controller) {
         this.name = name
         this.mac = mac
@@ -81,13 +85,93 @@ class BigAssFan {
         this.controller.responseFromFan[mac] = this.messageFromFan.bind(this)
     }
 
-    messageFromFan(args) {
+    responsePropertyGroup = {}
+
+    #fanProperties = {
+        "power": {
+            "query": ["FAN", "PWR"], // pur third query in query array
+            "readonly": false,
+
+        },
+
+        "speed": {
+            "query": ["FAN", "SPD"],
+            "readonly": false
+        },
 
     }
+    #lightProperties = {}
+    #sensorProperties = {}
+    #deviceProperties = {} 
+//whats the purpose of name "fan" ?
+    fan = new PropertyGroup("fan", this.#fanProperties, this)
+    //light = new PropertyGroup("light", this.#lightProperties, this)
+    //sensor = new PropertyGroup("sensor", this.#sensorProperties, this)
+    //device = new PropertyGroup("device", this.#deviceProperties, this)
+    
 
-    send(args) {
-        let message = args.unshift(this.mac).join(";")
+
+    messageFromFan(args) {
+        this.responsePropertyGroup[args[0]](args)
+    }
+
+    send(query) {
+        query.unshift(this.mac)
+        let message = query.join(";")
         this.controller.sendRaw(`<${message}>`, this.address)
     }
 
 }
+
+class PropertyGroup extends EventEmitter {
+    constructor(name, template, device) {
+        super()
+        this.name = name
+        this.template = template
+        this.device = device
+
+        this.registerResponses(template)
+        this.createFields(template)
+        
+    }
+    cache = {}
+
+    registerResponses(template) {
+        for (const property in template) {
+            let groupType = template[property].query[0]
+            if (groupType in this.device.responsePropertyGroup) continue
+            this.device.responsePropertyGroup[groupType] = this.updateCache.bind(this)
+        }
+    }
+
+    updateCache(args) {
+        let state = args.pop()
+        for (const [key, value] of Object.entries(this.template)) {
+            if (args.join(";") !== value.query.join(";")) continue
+            this.cache[key] = state
+            this.emit("cacheUpdate")
+        }
+    }
+
+    createFields(template) {
+        for (let property of Object.keys(template)) {
+            Object.defineProperty(this, property, {
+                get: async () => {
+                    let query = Array.from(template[property].query)
+                    query.splice(2, 0, "GET")
+                    this.device.send(query)
+                    let waitForCache = new Promise(resolve => {
+                        this.on("cacheUpdate", () => {
+                            resolve(this.cache[property])
+                        })
+                    })
+                    return waitForCache
+                }
+            })
+        }
+    }
+}
+
+
+
+exports.FanController = FanController
