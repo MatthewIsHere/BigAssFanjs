@@ -1,5 +1,6 @@
 const dgram = require("dgram")
 const EventEmitter = require("events")
+const templates = require("./propertyTemplates")
 
 class FanController extends EventEmitter {
     constructor() {
@@ -87,27 +88,16 @@ class BigAssFan { //extend eventEmitter?
 
     responsePropertyGroup = {}
 
-    #fanProperties = {
-        "power": {
-            "query": ["FAN", "PWR"], // pur third query in query array
-            "readonly": false,
+    #fanProperties    = templates.fanTemplate
+    #lightProperties  = templates.lightTemplate
+    #sensorProperties = templates.sensorTemplate
+    #deviceProperties = templates.deviceTemplate
 
-        },
-
-        "speed": {
-            "query": ["FAN", "SPD"],
-            "readonly": false
-        },
-
-    }
-    #lightProperties = {}
-    #sensorProperties = {}
-    #deviceProperties = {} 
 //whats the purpose of name "fan" ?
     fan = new PropertyGroup("fan", this.#fanProperties, this)
-    //light = new PropertyGroup("light", this.#lightProperties, this)
-    //sensor = new PropertyGroup("sensor", this.#sensorProperties, this)
-    //device = new PropertyGroup("device", this.#deviceProperties, this)
+    light = new PropertyGroup("light", this.#lightProperties, this)
+    sensor = new PropertyGroup("sensor", this.#sensorProperties, this)
+    device = new PropertyGroup("device", this.#deviceProperties, this)
     
 
 
