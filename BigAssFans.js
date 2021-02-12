@@ -138,6 +138,14 @@ class PropertyGroup extends EventEmitter {
         let state = args.pop()
         for (const [key, value] of Object.entries(this.template)) {
             if (args.join(";") !== value.query.join(";")) continue
+            switch (state) {
+                case "ON":
+                    state = true
+                    break
+                case "OFF":
+                    state = false
+                    break
+            }
             this.cache[key] = state
             this.emit("cacheUpdate")
         }
@@ -157,10 +165,21 @@ class PropertyGroup extends EventEmitter {
                     })
                     return waitForCache
                 },
-                set: (newValue) => {
+                set: (newState) => {
                     let query = Array.from(template[property].query)
-                   // query.splice(2, 0, "SET")
-                    query.push(newValue)
+                    query.length = 2
+                    if (!(template[property].booleanType)) {
+                        query.splice(2, 0, "SET")
+                    } 
+                    switch (newState) {
+                        case true:
+                            newState = "ON"
+                            break
+                    case false:
+                            newState = "OFF"
+                            break
+                    }
+                    query.push(newState)
                     this.device.send(query)
                 }
             })
