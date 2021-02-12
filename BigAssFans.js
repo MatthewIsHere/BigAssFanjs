@@ -3,21 +3,29 @@ const EventEmitter = require("events")
 const templates = require("./propertyTemplates")
 
 class FanController extends EventEmitter {
-    constructor() {
-        super() // initializes functions for event listeners from EventEmitter
+    constructor(scan = true) {
+        super()
+        this.scan = scan
         this.socket.bind(this.fanPort)
         this.socket.on("listening", this.#socketOpen.bind(this))
-        this.socket.on("message", this.socketMessage.bind(this))
+        this.socket.on("message", this.#socketMessage.bind(this))
     }
 
 
     everyone = "255.255.255.255"
     fanPort = 31415
+    commandToFindDevices = "DEVICE;ID;GET"
     socket = dgram.createSocket("udp4")
     
     knownFans = {}
-    responseFromFan = {}
     
+    startSearch() { 
+        //Kind Of The Main Function. Started When Socket Is Ready
+        if (this.scan) {
+            this.broadcast(this.commandToFindDevices)
+        }
+    }
+
     sendRaw(payload, address) {
         let buffer = Buffer.from(payload)
         this.socket.send(buffer, this.fanPort, address, this.#socketError)
@@ -25,10 +33,6 @@ class FanController extends EventEmitter {
 
     broadcast(message) {
         this.sendRaw(`<ALL;${message}>`, this.everyone)
-    }
-
-    #socketOpen() {
-        this.socket.setBroadcast(true)
     }
 
     addNewFan(fanName, args, fanIP) {
@@ -45,7 +49,12 @@ class FanController extends EventEmitter {
         console.log(`${fanName}: ${reason} Error`)
     }
 
-    socketMessage(payload, sender) {
+    #socketOpen() {
+        this.socket.setBroadcast(true)
+        this.startSearch()
+    }
+
+    #socketMessage(payload, sender) {
         let message = String(payload)
         
         if (!message.match(/^\(.*\)$/)) return // Only allows messages with the stucture "( stuff here )". This is so random packets and command packets dont get received
@@ -54,21 +63,17 @@ class FanController extends EventEmitter {
         let fanName = splitMessage.shift()
         if (splitMessage[0] === "ERROR") return this.fanError(fanName, splitMessage[1])
 
-        //maybe rework and get rid of responsFromFan
         if (fanName in this.knownFans) { //Searches Known Fans By Name And If Found, Sends Command To Fan Handler
-            this.responseFromFan[fanName](splitMessage)
+            this.knownFans[fanName].messageFromFan(splitMessage)
         } else {
             this.addNewFan(fanName, splitMessage, sender.address)
-        }
-        
-        
-        
-       
+        }    
     }
 
     #socketError(error) {
         if (error) throw error
     }
+
 }
 
 
@@ -81,9 +86,6 @@ class BigAssFan { //extend eventEmitter?
         this.mac = mac
         this.address = address
         this.controller = controller
-        
-        this.controller.responseFromFan[name] = this.messageFromFan.bind(this)
-        this.controller.responseFromFan[mac] = this.messageFromFan.bind(this)
     }
 
     responsePropertyGroup = {}
@@ -99,10 +101,8 @@ class BigAssFan { //extend eventEmitter?
     sensor = new PropertyGroup("sensor", this.#sensorProperties, this)
     device = new PropertyGroup("device", this.#deviceProperties, this)
     
-
-
-    messageFromFan(args) {
-        this.responsePropertyGroup[args[0]](args)
+    messageFromFan(messageSplit) {
+        this.responsePropertyGroup[messageSplit[0]](messageSplit)
     }
 
     send(query) {
@@ -110,7 +110,6 @@ class BigAssFan { //extend eventEmitter?
         let message = query.join(";")
         this.controller.sendRaw(`<${message}>`, this.address)
     }
-
 }
 
 class PropertyGroup extends EventEmitter {
@@ -124,6 +123,7 @@ class PropertyGroup extends EventEmitter {
         this.createFields(template)
         
     }
+
     cache = {}
 
     registerResponses(template) {
@@ -156,6 +156,12 @@ class PropertyGroup extends EventEmitter {
                         })
                     })
                     return waitForCache
+                },
+                set: (newValue) => {
+                    let query = Array.from(template[property].query)
+                   // query.splice(2, 0, "SET")
+                    query.push(newValue)
+                    this.device.send(query)
                 }
             })
         }
