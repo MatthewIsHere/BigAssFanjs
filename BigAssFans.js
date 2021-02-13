@@ -49,6 +49,10 @@ class FanController extends EventEmitter {
         console.log(`${fanName}: ${reason} Error`)
     }
 
+    close() {
+        this.socket.close()
+    }
+
     #socketOpen() {
         this.socket.setBroadcast(true)
         this.startSearch()
