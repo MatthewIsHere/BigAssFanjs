@@ -147,7 +147,7 @@ class PropertyGroup extends EventEmitter {
                     break
             }
             this.cache[key] = state
-            this.emit("cacheUpdate")
+            this.emit("cacheUpdate", key)
         }
     }
 
@@ -159,8 +159,10 @@ class PropertyGroup extends EventEmitter {
                     query.splice(2, 0, "GET")
                     this.device.send(query)
                     let waitForCache = new Promise(resolve => {
-                        this.on("cacheUpdate", () => {
-                            resolve(this.cache[property])
+                        this.on("cacheUpdate", cacheProperty => {
+                            if (cacheProperty == property) {
+                                resolve(this.cache[property])
+                            }
                         })
                     })
                     return waitForCache
