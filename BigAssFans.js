@@ -64,7 +64,7 @@ class FanController extends EventEmitter {
         if (splitMessage[0] === "ERROR") return this.fanError(fanName, splitMessage[1])
 
         if (fanName in this.knownFans) { //Searches Known Fans By Name And If Found, Sends Command To Fan Handler
-            this.knownFans[fanName].messageFromFan(splitMessage)
+            this.knownFans[fanName].messageFromFan(splitMessage) //Passes Fan Message To Responsible Fan Class
         } else {
             this.addNewFan(fanName, splitMessage, sender.address)
         }    
