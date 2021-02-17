@@ -1,5 +1,5 @@
 # BigAssFanjs
-BigAssFanjs is an API library written to manage fans made by BigAssFans
+BigAssFanjs is an (Unofficial) API library written to manage fans made by BigAssFans
 - [BigAssFanjs](#bigassfanjs)
   - [Installation](#installation)
   - [Usage](#usage)
