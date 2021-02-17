@@ -53,6 +53,10 @@ class FanController extends EventEmitter {
         console.log(`Error: "${fanName}: ${reason} ERROR"`)
     }
 
+    close() {
+        this.socket.close()
+    }
+
     #socketOpen() {
         this.socket.setBroadcast(true)
         this.startSearch()
@@ -68,7 +72,7 @@ class FanController extends EventEmitter {
         if (splitMessage[0] === "ERROR") return this.fanError(fanName, splitMessage[1])
 
         if (fanName in this.knownFans) { //Searches Known Fans By Name And If Found, Sends Command To Fan Handler
-            this.knownFans[fanName].messageFromFan(splitMessage)
+            this.knownFans[fanName].messageFromFan(splitMessage) //Passes Fan Message To Responsible Fan Class
         } else {
             this.addNewFan(fanName, splitMessage, sender.address)
         }    
@@ -149,7 +153,7 @@ class PropertyGroup extends EventEmitter {
                     break
             }
             this.cache[key] = state
-            this.emit("cacheUpdate")
+            this.emit("cacheUpdate", key)
         }
     }
 
@@ -161,8 +165,10 @@ class PropertyGroup extends EventEmitter {
                     query.splice(2, 0, "GET")
                     this.device.send(query)
                     let waitForCache = new Promise(resolve => {
-                        this.on("cacheUpdate", () => {
-                            resolve(this.cache[property])
+                        this.on("cacheUpdate", cacheProperty => {
+                            if (cacheProperty == property) {
+                                resolve(this.cache[property])
+                            }
                         })
                     })
                     return waitForCache

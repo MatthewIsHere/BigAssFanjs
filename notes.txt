@@ -1,3 +1,10 @@
 as far as i know, it works on nodejs 14.0.0 and later and not earlier because of the private classes.
 i will try to make it work on 11.0.0 so that Raspberry Pi Zeroes can use this library.
 (NodeJS only supported ARM v6l until 11.0.0 which is the architecture of the RPI 0)
+
+
+Test and fill out all propertygroups
+
+!HUGE!
+
+Fundamental problem with property getter function. Because of node’s asynchronous nature, multiple get requests overlap. This is solvable, but makes the process much more complicated
