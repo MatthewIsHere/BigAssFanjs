@@ -1,5 +1,5 @@
 let BigAssFans = require("../BigAssFans")
-
+//needs fixing
 let masterController = new BigAssFans.FanController()
 let myNumberOfFans = 1
 let discoveredFans = 0

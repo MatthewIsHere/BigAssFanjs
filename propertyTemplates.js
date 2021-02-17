@@ -83,5 +83,5 @@ const deviceTemplate = {
 
 exports.fanTemplate = fanTemplate
 exports.lightTemplate = lightTemplate
-exports.sensorTemplate = sensorTemplate
+//exports.sensorTemplate = sensorTemplate
 exports.deviceTemplate = deviceTemplate

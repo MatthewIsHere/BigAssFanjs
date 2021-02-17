@@ -191,3 +191,4 @@ class PropertyGroup extends EventEmitter {
 
 
 exports.FanController = FanController
+exports.BigAssFan = BigAssFan
