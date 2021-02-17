@@ -1,6 +1,6 @@
 const fanTemplate = {
         "power": {
-            "query": ["FAN", "PWR"], // pur third query in query array
+            "query": ["FAN", "PWR"],
             "booleanType": true,
             "readonly": false,
 
@@ -10,28 +10,75 @@ const fanTemplate = {
             "booleanType": false,
             "readonly": false
         },
+        "auto": {
+            "query": ["FAN", "AUTO"],
+            "booleanType": true,
+            "readonly": false
+        },
         "whoosh": {
             "query": ["FAN", "WHOOSH", "STATUS"],
             "booleanType": true,
             "readonly": false
         },
-        "spinDirectionForwards": { // we got a problem here
+        "spinDirection": { 
             "query": ["FAN", "DIR"],
             "booleanType": false,
             "readonly": false
         }
 }
 
-const lightTemplate = {}
+const lightTemplate = {
+        "brightness": {
+            "query": ["LIGHT", "LEVEL", "ACTUAL"],
+            "booleanType": false,
+            "readonly": false
+        },
+        "auto": {
+            "query": ["LIGHT", "AUTO"],
+            "booleanType": true,
+            "readonly": false
+        },
+}
 
-const sensorTemplate = {}
+//const sensorTemplate = {} My Fans dont have sensors so i cant test this at the moment
+//SENSOR NOT IMPLEMENTED
 
 const deviceTemplate = {
-    "beeper": {
-        "query": ["DEVICE", "BEEPER"],
-        "booleanType": true,
-        "readonly": false
-    }
+        "beep": {
+            "query": ["DEVICE", "BEEPER"],
+            "booleanType": true,
+            "readonly": false
+        },
+        "indicators": {
+            "query": ["DEVICE", "INDICATORS"],
+            "booleanType": true,
+            "readonly": false
+        },
+        "winterMode": {
+            "query": ["WINTERMODE", "STATE"],
+            "booleanType": true,
+            "readonly": false
+        },
+        "height": {
+            "query": ["WINTERMODE", "HEIGHT"],
+            "booleanType": true,
+            "readonly": false
+        },
+        "ssid": {
+            "query": ["NW", "SSID"],
+            "booleanType": false,
+            "readonly": false
+        },
+        "ap": {
+            "query": ["NW", "AP", "STATUS"],
+            "booleanType": true,
+            "readonly": false
+        },
+        "token": {
+            "query": ["NW", "TOKEN"],
+            "booleanType": true,
+            "readonly": true
+        }
 }
 
 exports.fanTemplate = fanTemplate

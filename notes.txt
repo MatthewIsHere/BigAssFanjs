@@ -5,6 +5,11 @@ i will try to make it work on 11.0.0 so that Raspberry Pi Zeroes can use this li
 
 Test and fill out all propertygroups
 
-!HUGE!
+Docs
+Examples
 
-Fundamental problem with property getter function. Because of node’s asynchronous nature, multiple get requests overlap. This is solvable, but makes the process much more complicated
+Add an all fans controller entry. should be pretty easy, but can't decide where to put it in the class.
+
+Plan to search for fans multiple times because of overlap
+
+maybe end up removing property groups and merge getters and setter onto BigAssFan Class

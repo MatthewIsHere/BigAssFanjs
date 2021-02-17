@@ -84,11 +84,7 @@ class FanController extends EventEmitter {
 
 }
 
-
-
-
-
-class BigAssFan { //extend eventEmitter?
+class BigAssFan {
     constructor (name, mac, address, controller) {
         this.name = name
         this.mac = mac
@@ -100,12 +96,10 @@ class BigAssFan { //extend eventEmitter?
 
     #fanProperties    = templates.fanTemplate
     #lightProperties  = templates.lightTemplate
-    #sensorProperties = templates.sensorTemplate
     #deviceProperties = templates.deviceTemplate
 
     fan =    new PropertyGroup(this.#fanProperties, this)
     light =  new PropertyGroup(this.#lightProperties, this)
-    sensor = new PropertyGroup(this.#sensorProperties, this)
     device = new PropertyGroup(this.#deviceProperties, this)
     
     messageFromFan(messageSplit) {
@@ -127,7 +121,6 @@ class PropertyGroup extends EventEmitter {
 
         this.registerResponses(template)
         this.createFields(template)
-        
     }
 
     cache = {}
