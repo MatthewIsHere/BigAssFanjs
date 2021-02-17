@@ -3,9 +3,10 @@ const EventEmitter = require("events")
 const templates = require("./propertyTemplates")
 
 class FanController extends EventEmitter {
-    constructor(scan = true) {
+    constructor(scan = true, debug = false) {
         super()
         this.scan = scan
+        this.debug = debug
         this.socket.bind(this.fanPort)
         this.socket.on("listening", this.#socketOpen.bind(this))
         this.socket.on("message", this.#socketMessage.bind(this))
@@ -20,7 +21,8 @@ class FanController extends EventEmitter {
     knownFans = {}
     
     startSearch() { 
-        //Kind Of The Main Function. Started When Socket Is Ready
+        //Scanning Started When Socket Is Ready
+        //If Controller Is Initialized With "scan=false", Fans Will Not Be Auto-discovered. Useful If You Want Stealthy Commands To One Fan
         if (this.scan) {
             this.broadcast(this.commandToFindDevices)
         }
@@ -29,6 +31,8 @@ class FanController extends EventEmitter {
     sendRaw(payload, address) {
         let buffer = Buffer.from(payload)
         this.socket.send(buffer, this.fanPort, address, this.#socketError)
+        if (!this.debug) return 
+        console.log(`Outgoing: "${payload}" => ${address}`)
     } 
 
     broadcast(message) {
@@ -36,17 +40,17 @@ class FanController extends EventEmitter {
     }
 
     addNewFan(fanName, args, fanIP) {
-        let deviceModel = args[3] // Gets Model Name From Command. Ex: FAN,HAIKU,LSERIES
-        let deviceType = deviceModel.split(",")[0] // Returns Only The Text Before The First Comma. This Confirms That The Device Is A Fan, And Not A Wall Switch
+        let deviceModel = args[3] //Gets Model Name From Command. Ex: FAN,HAIKU,LSERIES
+        let deviceType = deviceModel.split(",")[0] //Confirms That The Device Is A Fan, And Not A Wall Switch
         let mac = args[2] // MAC Address OF New Fan
-        if (deviceType !== "FAN") return // Currently Only Supports Fans. Also Filters Out Responses That Arent Identifying The Fan
+        if (deviceType !== "FAN") return //Currently Only Supports Fans. Also Filters Out Responses That Arent Identifying The Fan
         let newFan = new BigAssFan(fanName, mac, fanIP, this)
         this.knownFans[fanName] = newFan
         this.emit("newFan", newFan)
     }
 
     fanError(fanName, reason) {
-        console.log(`${fanName}: ${reason} Error`)
+        console.log(`Error: "${fanName}: ${reason} ERROR"`)
     }
 
     #socketOpen() {
@@ -58,7 +62,7 @@ class FanController extends EventEmitter {
         let message = String(payload)
         
         if (!message.match(/^\(.*\)$/)) return // Only allows messages with the stucture "( stuff here )". This is so random packets and command packets dont get received
-        console.log(message)
+        if (this.debug) console.log(`Incoming: "${message}" <= ${sender.address}`)
         let splitMessage = message.slice(1, -1).split(";")
         let fanName = splitMessage.shift()
         if (splitMessage[0] === "ERROR") return this.fanError(fanName, splitMessage[1])
@@ -95,11 +99,10 @@ class BigAssFan { //extend eventEmitter?
     #sensorProperties = templates.sensorTemplate
     #deviceProperties = templates.deviceTemplate
 
-//whats the purpose of name "fan" ?
-    fan = new PropertyGroup("fan", this.#fanProperties, this)
-    light = new PropertyGroup("light", this.#lightProperties, this)
-    sensor = new PropertyGroup("sensor", this.#sensorProperties, this)
-    device = new PropertyGroup("device", this.#deviceProperties, this)
+    fan =    new PropertyGroup(this.#fanProperties, this)
+    light =  new PropertyGroup(this.#lightProperties, this)
+    sensor = new PropertyGroup(this.#sensorProperties, this)
+    device = new PropertyGroup(this.#deviceProperties, this)
     
     messageFromFan(messageSplit) {
         this.responsePropertyGroup[messageSplit[0]](messageSplit)
@@ -113,9 +116,8 @@ class BigAssFan { //extend eventEmitter?
 }
 
 class PropertyGroup extends EventEmitter {
-    constructor(name, template, device) {
+    constructor(template, device) {
         super()
-        this.name = name
         this.template = template
         this.device = device
 
@@ -154,7 +156,7 @@ class PropertyGroup extends EventEmitter {
     createFields(template) {
         for (let property of Object.keys(template)) {
             Object.defineProperty(this, property, {
-                get: async () => {
+                get: () => {
                     let query = Array.from(template[property].query)
                     query.splice(2, 0, "GET")
                     this.device.send(query)

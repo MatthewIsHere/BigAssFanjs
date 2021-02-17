@@ -1,0 +1,23 @@
+{
+  "name": "bigassfanjs",
+  "version": "1.0.0",
+  "description": "API library for BigAssFans (Unofficial)",
+  "main": "BigAssFans.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatthewIsHere/BigAssFanjs.git"
+  },
+  "keywords": [
+    "API",
+    "BigAssFans"
+  ],
+  "author": "Matthew Lyon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MatthewIsHere/BigAssFanjs/issues"
+  },
+  "homepage": "https://github.com/MatthewIsHere/BigAssFanjs#readme"
+}
