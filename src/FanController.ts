@@ -46,10 +46,16 @@ class FanController extends EventEmitter {
     }
 
     public newFan(identifier: string, query: string[], ip: string) {
-
-
+        let mac: string = query[2]
+        let deviceModel: string = query[3]
+        let isFan: boolean = deviceModel.slice(0,3) == "FAN"
+        if (!isFan) return //filters out BigAssFan wall switches
+        let fan = new BigAssFan(identifier, mac, ip, this)
+        this.discoveredFans[identifier] = fan
+        this.emit("newFan", fan)
     }
-    
+
+
     private sendToFan(fanName: string, query: string[]) {
         let fan: BigAssFan = this.discoveredFans[fanName]
         return fan.receiveMessage(query)
