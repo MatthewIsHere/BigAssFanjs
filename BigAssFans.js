@@ -30,13 +30,21 @@ class FanController extends EventEmitter {
 
     sendRaw(payload, address) {
         let buffer = Buffer.from(payload)
-        this.socket.send(buffer, this.fanPort, address, this.#socketError)
-        if (!this.debug) return 
-        console.log(`Outgoing: "${payload}" => ${address}`)
+        let socketSent = new Promise((resolve, reject) => {
+            this.socket.send(buffer, this.fanPort, address, (error, bytes) => {
+                if (error) throw error
+                resolve(bytes)
+            })      
+        }) 
+        
+        if (this.debug) {
+            console.log(`Outgoing: "${payload}" => ${address}`)
+        }
+        return socketSent
     } 
 
-    broadcast(message) {
-        this.sendRaw(`<ALL;${message}>`, this.everyone)
+    async broadcast(message) {
+        await this.sendRaw(`<ALL;${message}>`, this.everyone)
     }
 
     addNewFan(fanName, args, fanIP) {
@@ -77,11 +85,6 @@ class FanController extends EventEmitter {
             this.addNewFan(fanName, splitMessage, sender.address)
         }    
     }
-
-    #socketError(error) {
-        if (error) throw error
-    }
-
 }
 
 class BigAssFan {
@@ -106,10 +109,10 @@ class BigAssFan {
         this.responsePropertyGroup[messageSplit[0]](messageSplit)
     }
 
-    send(query) {
+    async send(query) {
         query.unshift(this.mac)
         let message = query.join(";")
-        this.controller.sendRaw(`<${message}>`, this.address)
+        await this.controller.sendRaw(`<${message}>`, this.address)
     }
 }
 
