@@ -2,7 +2,7 @@
   "name": "bigassfanjs",
   "version": "2.0.0",
   "description": "API library for BigAssFans (Unofficial)",
-  "main": "build/bigassfan.js",
+  "main": "dist/index.js",
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc",

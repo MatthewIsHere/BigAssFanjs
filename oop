@@ -1,9 +1,0 @@
-const FanController = require("./BigAssFans").FanController
-
-let masterController = new FanController()
-
-masterController.on("newFan", fan => {
-    if (fan.name != "Matthew's Fan") return
-    fan.fan.speed = 4
-    masterController.close()
-})
