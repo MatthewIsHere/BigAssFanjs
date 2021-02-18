@@ -1,16 +1,21 @@
 import EventEmitter from "events"
 import dgram, { RemoteInfo } from "dgram"
+import BigAssFan from "./BigAssFan"
+
+interface FanIndex {
+    [index: string]: BigAssFan
+}
 
 class FanController extends EventEmitter {
     readonly scan: boolean
     public logTraffic: boolean
-    public discoveredFans: object = {}
+    public discoveredFans: FanIndex = {}
     private socket: dgram.Socket = dgram.createSocket("udp4")
 
     static everyone: string = "255.255.255.255"
     static port: number = 31415
     static readonly commandToFindFans: string[] = ["DEVICE", "ID", "GET"]
-
+    
     constructor(scan: boolean = true, logTraffic: boolean = false) {
         super()
         this.scan = scan
@@ -41,7 +46,13 @@ class FanController extends EventEmitter {
     }
 
     public newFan(identifier: string, query: string[], ip: string) {
-        
+
+
+    }
+    
+    private sendToFan(fanName: string, query: string[]) {
+        let fan: BigAssFan = this.discoveredFans[fanName]
+        return fan.receiveMessage(query)
     }
 
     private socketBound() {
@@ -66,7 +77,10 @@ class FanController extends EventEmitter {
         let alreadyDiscovered: boolean = this.checkIfDiscovered(identifier)
         if (!alreadyDiscovered) {
             this.newFan(identifier, query, sender.address)
+            return
         }
+        this.sendToFan(identifier, query)
+        return
     }
 
 }
