@@ -36,6 +36,14 @@ class FanController extends EventEmitter {
         this.broadcast(FanController.commandToFindFans)
     }
 
+    public checkIfDiscovered(identifier: string): boolean {
+        return this.discoveredFans.hasOwnProperty(identifier)
+    }
+
+    public newFan(identifier: string, query: string[], ip: string) {
+        
+    }
+
     private socketBound() {
         this.socket.setBroadcast(true)
         if (this.scan) {
@@ -52,6 +60,13 @@ class FanController extends EventEmitter {
         let message: string = String(payload)
         if (!message.match(/^\(.*\)$/)) return
         if (this.logTraffic) console.log(`Incoming: "${message}" <= ${sender.address}`)
+        let query: string[] = message.slice(1, -1).split(";")
+        if (query.length < 1) return
+        let identifier: string = query.shift() as string
+        let alreadyDiscovered: boolean = this.checkIfDiscovered(identifier)
+        if (!alreadyDiscovered) {
+            this.newFan(identifier, query, sender.address)
+        }
     }
 
 }
