@@ -30,9 +30,16 @@ class FanController extends EventEmitter {
         this.send(query, FanController.everyone)
     }
 
+    public discover() {
+        this.broadcast(FanController.commandToFindFans)
+    }
+
     private socketBound() {
         this.socket.setBroadcast(true)
-        this.broadcast(FanController.commandToFindFans)
+        if (this.scan) {
+            this.discover()
+            setInterval(this.discover, 5000)
+        }
     }
 
     private socketCallback(error: Error | null, bytes: number) {
