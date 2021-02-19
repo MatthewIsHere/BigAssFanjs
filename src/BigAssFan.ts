@@ -13,11 +13,15 @@ class BigAssFan {
         this.controller = controller
     }
     
-    receiveMessage(query: string[]) {
+    public receiveMessage(query: string[]) {
 
     }
 
-
+    public send(query: string[]) {
+        let assembledQuery = Array.from(query)
+        assembledQuery.unshift(this.mac)
+        this.controller.send(assembledQuery, this.ip)
+    }
 }
 
 export default BigAssFan
