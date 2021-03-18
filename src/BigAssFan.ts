@@ -6,6 +6,8 @@ import EventEmitter from "events";
 const queryJSONPath = join(__dirname, "queries.json")
 const queries = JSON.parse(String(readFileSync(queryJSONPath)))
 
+type FanResponseValue = Number | Boolean
+
 class BigAssFan extends EventEmitter {
     public readonly name
     public readonly mac
@@ -30,28 +32,35 @@ class BigAssFan extends EventEmitter {
         this.controller.send(assembledQuery, this.ip)
     }
    
-    private registerForResponse(query1: string, query2: string): Promise<string[]> {
-        let promise = new Promise(resolve => {
+    private registerForResponse(query1: string, query2: string): Promise<FanResponseValue> {
+        let promise: Promise<FanResponseValue> = new Promise(resolve => {
             this.on("response", (response: string[]) => {
                 if (response[0] !== query1) return
                 if (response[1] !== query2) return
-                resolve(response)
+                resolve(this.convertToFanResponseValue(response[response.length-1]))
             })
         })
-        return promise as Promise<string[]>
+        return promise 
     }
 
-    speed(speed?: number): Promise<Number> {
+    convertToFanResponseValue(response: string): FanResponseValue {
+        if (response == "ON") return true
+        if (response == "OFF") return true
+        return Number(response)
+    }
+
+    speed(speed?: number): Promise<FanResponseValue> {
         let query: string[] = Array.from(queries.speed)
         let operationType = (speed == undefined) ? "GET": "SET"
         query.splice(2, 0, operationType)
-        if(speed) query[3] = String(speed)
-        let returnPromise = new Promise(resolve => {
-            this.registerForResponse(query[0], query[1])
-            .then(response => {
-                resolve(Number(response[3]))
-            }) 
-        }) as Promise<Number>
+        if (speed) {
+            speed = (speed > 7) ? 7 : speed
+            speed = (speed < 0) ? 0 : speed
+            query[3] = String(speed)
+        }
+        let returnPromise: Promise<FanResponseValue> = new Promise(resolve => 
+            this.registerForResponse(query[0], query[1]).then(response => resolve(response))
+        )
         this.send(query)
         return returnPromise
     }
