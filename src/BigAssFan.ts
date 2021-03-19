@@ -74,6 +74,17 @@ class BigAssFan extends EventEmitter {
         this.send(query)
         return returnPromise
     }
+
+    whoosh(whoosh?: boolean): Promise<FanResponseValue> {
+        let query: string[] = Array.from(queries.whoosh)
+        let state: string = (whoosh) ? "ON" : "OFF";
+        (whoosh == undefined) ? query.splice(2, 0, "GET"): query[2] = state
+        let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
+            this.registerForResponse(query[0], query[1]).then(response => resolve(response))
+        )
+        this.send(query)
+        return returnPromise
+    }
 }
 
 export default BigAssFan
