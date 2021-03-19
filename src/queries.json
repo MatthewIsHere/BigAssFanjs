@@ -1,3 +1,4 @@
 {
-    "speed": ["FAN", "SPD", "ACTUAL"]
+    "speed": ["FAN", "SPD", "ACTUAL"],
+    "power": ["FAN", "PWR"]
 }
