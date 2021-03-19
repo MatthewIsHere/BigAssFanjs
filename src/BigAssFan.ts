@@ -45,7 +45,7 @@ class BigAssFan extends EventEmitter {
 
     convertToFanResponseValue(response: string): FanResponseValue {
         if (response == "ON") return true
-        if (response == "OFF") return true
+        if (response == "OFF") return false
         return Number(response)
     }
 
@@ -53,12 +53,22 @@ class BigAssFan extends EventEmitter {
         let query: string[] = Array.from(queries.speed)
         let operationType = (speed == undefined) ? "GET": "SET"
         query.splice(2, 0, operationType)
-        if (speed) {
+        if (speed !== undefined) {
             speed = (speed > 7) ? 7 : speed
             speed = (speed < 0) ? 0 : speed
             query[3] = String(speed)
         }
         let returnPromise: Promise<FanResponseValue> = new Promise(resolve => 
+            this.registerForResponse(query[0], query[1]).then(response => resolve(response))
+        )
+        this.send(query)
+        return returnPromise
+    }
+    power(power?: boolean): Promise<FanResponseValue> {
+        let query: string[] = Array.from(queries.power)
+        let state = (power) ? "ON" : "OFF"
+        query[2] = (power == undefined) ? "GET": state
+        let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
             this.registerForResponse(query[0], query[1]).then(response => resolve(response))
         )
         this.send(query)
