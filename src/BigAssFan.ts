@@ -1,10 +1,5 @@
 import FanController from "./FanController";
-import { join } from "path"
-import { readFileSync } from "fs"
 import EventEmitter from "events";
-
-const queryJSONPath = join(__dirname, "queries.json")
-const queries = JSON.parse(String(readFileSync(queryJSONPath)))
 
 type FanResponseValue = Number | Boolean
 
@@ -35,7 +30,7 @@ class BigAssFan extends EventEmitter {
    
     //Fan speed <0-7>
     speed(speed?: number): Promise<FanResponseValue> {
-        let query: string[] = Array.from(queries.speed)
+        let query: string[] = ["FAN", "SPD", "ACTUAL"]
         let operationType = (speed == undefined) ? "GET": "SET"
         query.splice(2, 0, operationType)
         if (speed !== undefined) query[3] = String(Math.min(7, Math.max(0, speed)))
@@ -48,7 +43,7 @@ class BigAssFan extends EventEmitter {
 
     //Fan power <boolean>
     power(power?: boolean): Promise<FanResponseValue> {
-        let query: string[] = Array.from(queries.power)
+        let query: string[] = ["FAN", "PWR"]
         let state = (power) ? "ON" : "OFF"
         query[2] = (power == undefined) ? "GET": state
         let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
@@ -60,7 +55,7 @@ class BigAssFan extends EventEmitter {
 
     //Whoosh mode <boolean>
     whoosh(whoosh?: boolean): Promise<FanResponseValue> {
-        let query: string[] = Array.from(queries.whoosh)
+        let query: string[] = ["FAN", "WHOOSH", "STATUS"]
         let state: string = (whoosh) ? "ON" : "OFF";
         (whoosh == undefined) ? query.splice(2, 0, "GET"): query[2] = state
         let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
@@ -72,7 +67,7 @@ class BigAssFan extends EventEmitter {
 
     //Fan reverse mode <boolean>
     reverse(reverse?: boolean): Promise<FanResponseValue> {
-        let query: string[] = Array.from(queries.reverse)
+        let query: string[] = ["FAN", "DIR"]
         let state: string = (reverse) ? "REV": "FWD"
         let operationType = (reverse == undefined) ? "GET" : "SET"
         query.splice(2, 0, operationType)
