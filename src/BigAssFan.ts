@@ -44,8 +44,10 @@ class BigAssFan extends EventEmitter {
     }
 
     convertToFanResponseValue(response: string): FanResponseValue {
-        if (response == "ON") return true
+        if (response == "ON")  return true
         if (response == "OFF") return false
+        if (response == "FWD") return false
+        if (response == "REV") return true
         return Number(response)
     }
 
