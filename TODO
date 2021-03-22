@@ -1,3 +1,8 @@
 Add Minify and compress on build
 make npm package better
 finish rewriting using promises and typescript
+
+Implement
+Discover function
+close function
+all fans class
