@@ -1,5 +1,6 @@
 {
     "speed": ["FAN", "SPD", "ACTUAL"],
     "power": ["FAN", "PWR"],
-    "whoosh": ["FAN", "WHOOSH", "STATUS"]
+    "whoosh": ["FAN", "WHOOSH", "STATUS"],
+    "reverse": ["FAN", "DIR"]
 }

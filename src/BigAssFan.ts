@@ -83,6 +83,19 @@ class BigAssFan extends EventEmitter {
         this.send(query)
         return returnPromise
     }
+
+    reverse(reverse?: boolean): Promise<FanResponseValue> {
+        let query: string[] = Array.from(queries.reverse)
+        let state: string = (reverse) ? "REV": "FWD"
+        let operationType = (reverse == undefined) ? "GET" : "SET"
+        query.splice(2, 0, operationType)
+        if (reverse !== undefined) query[3] = state
+        let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
+            this.registerForResponse(query[0], query[1]).then(response => resolve(response))
+        )
+        this.send(query)
+        return returnPromise
+    }
 }
 
 export default BigAssFan
