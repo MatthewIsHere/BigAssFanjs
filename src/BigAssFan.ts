@@ -55,11 +55,7 @@ class BigAssFan extends EventEmitter {
         let query: string[] = Array.from(queries.speed)
         let operationType = (speed == undefined) ? "GET": "SET"
         query.splice(2, 0, operationType)
-        if (speed !== undefined) {
-            speed = (speed > 7) ? 7 : speed
-            speed = (speed < 0) ? 0 : speed
-            query[3] = String(speed)
-        }
+        if (speed !== undefined) query[3] = String(Math.min(7, Math.max(0, speed)))
         let returnPromise: Promise<FanResponseValue> = new Promise(resolve => 
             this.registerForResponse(query[0], query[1]).then(response => resolve(response))
         )
