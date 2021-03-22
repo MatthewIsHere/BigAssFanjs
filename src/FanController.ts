@@ -11,17 +11,24 @@ class FanController extends EventEmitter {
     public logTraffic: boolean
     public discoveredFans: FanIndex = {}
     private socket: dgram.Socket = dgram.createSocket("udp4")
-
     static everyone: string = "255.255.255.255"
     static port: number = 31415
     static readonly commandToFindFans: string[] = ["DEVICE", "ID", "GET"]
-    
+
+    //Controls all fans on network
+    public all: BigAssFan = new BigAssFan("all", "ALL", FanController.everyone, this)
+
     constructor(scan: boolean = true, logTraffic: boolean = false) {
         super()
         this.scan = scan
         this.logTraffic = logTraffic
         this.socket.bind(FanController.port, this.socketBound.bind(this))
         this.socket.on("message", this.socketMessage.bind(this))
+    }
+
+    //Close controller after set milliseconds (timeout is so final responses can be received)
+    public close(timeout: number = 0) {
+        setTimeout(() => this.socket.close(), timeout)
     }
 
     public send(query: string[], address: string) {
@@ -37,6 +44,7 @@ class FanController extends EventEmitter {
         this.send(assembledQuery, FanController.everyone)
     }
 
+    //Sends out discover command to all devices on network
     public discover() {
         this.broadcast(FanController.commandToFindFans)
     }
@@ -63,10 +71,7 @@ class FanController extends EventEmitter {
 
     private socketBound() {
         this.socket.setBroadcast(true)
-        if (this.scan) {
-            this.discover()
-            //setInterval(this.discover.bind(this), 10000) maybe not necessary
-        }
+        if (this.scan) this.discover()
     }
 
     private socketCallback(error: Error | null, bytes: number) {

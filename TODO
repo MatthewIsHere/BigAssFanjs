@@ -2,7 +2,7 @@ Add Minify and compress on build
 make npm package better
 finish rewriting using promises and typescript
 
-Implement
-Discover function
-close function
-all fans class
+
+
+maybe sort the fans by mac address in discoveredFans so that changed fan names and ip addresses don't interfere with the actual list of fans
+if not, rename identifier variable to fanName to make it less confusing
