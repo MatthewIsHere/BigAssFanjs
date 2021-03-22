@@ -1,9 +1,12 @@
 {
   "name": "bigassfanjs",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "API library for BigAssFans (Unofficial)",
-  "main": "BigAssFans.js",
+  "main": "dist/index.js",
   "scripts": {
+    "prepublish": "npm run build",
+    "build": "tsc",
+    "postbuild": "",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/MatthewIsHere/BigAssFanjs/issues"
   },
-  "homepage": "https://github.com/MatthewIsHere/BigAssFanjs#readme"
+  "homepage": "https://github.com/MatthewIsHere/BigAssFanjs#readme",
+  "devDependencies": {
+    "@types/node": "^14.14.28",
+    "typescript": "^4.1.5"
+  }
 }

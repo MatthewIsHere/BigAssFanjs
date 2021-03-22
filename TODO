@@ -1,0 +1,2 @@
+1. Add Minify after build
+2. (Idea) sort the fans by mac address in discoveredFans so that changed fan names and ip addresses don't interfere with the actual list of fans. Otherwise rename identifier variable to fanName to make less confusing

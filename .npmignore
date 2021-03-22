@@ -1,2 +1,5 @@
-notes.txt
 .gitignore
+src/
+testing.js
+tsconfig.json
+TODO
