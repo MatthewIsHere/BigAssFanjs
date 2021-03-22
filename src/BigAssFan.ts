@@ -21,36 +21,19 @@ class BigAssFan extends EventEmitter {
         this.ip = ip
         this.controller = controller
     }
-    
+    //Function called by controller when a message had arrived
     public receiveMessage(query: string[]) {
         this.emit("response", query)
     }
 
+    //Sends message up to the controller
     public send(query: string[]) {
         let assembledQuery = Array.from(query)
         assembledQuery.unshift(this.mac)
         this.controller.send(assembledQuery, this.ip)
     }
    
-    private registerForResponse(query1: string, query2: string): Promise<FanResponseValue> {
-        let promise: Promise<FanResponseValue> = new Promise(resolve => {
-            this.on("response", (response: string[]) => {
-                if (response[0] !== query1) return
-                if (response[1] !== query2) return
-                resolve(this.convertToFanResponseValue(response[response.length-1]))
-            })
-        })
-        return promise 
-    }
-
-    convertToFanResponseValue(response: string): FanResponseValue {
-        if (response == "ON")  return true
-        if (response == "OFF") return false
-        if (response == "FWD") return false
-        if (response == "REV") return true
-        return Number(response)
-    }
-
+    //Fan speed <0-7>
     speed(speed?: number): Promise<FanResponseValue> {
         let query: string[] = Array.from(queries.speed)
         let operationType = (speed == undefined) ? "GET": "SET"
@@ -62,6 +45,8 @@ class BigAssFan extends EventEmitter {
         this.send(query)
         return returnPromise
     }
+
+    //Fan power <boolean>
     power(power?: boolean): Promise<FanResponseValue> {
         let query: string[] = Array.from(queries.power)
         let state = (power) ? "ON" : "OFF"
@@ -73,6 +58,7 @@ class BigAssFan extends EventEmitter {
         return returnPromise
     }
 
+    //Whoosh mode <boolean>
     whoosh(whoosh?: boolean): Promise<FanResponseValue> {
         let query: string[] = Array.from(queries.whoosh)
         let state: string = (whoosh) ? "ON" : "OFF";
@@ -84,6 +70,7 @@ class BigAssFan extends EventEmitter {
         return returnPromise
     }
 
+    //Fan reverse mode <boolean>
     reverse(reverse?: boolean): Promise<FanResponseValue> {
         let query: string[] = Array.from(queries.reverse)
         let state: string = (reverse) ? "REV": "FWD"
@@ -95,6 +82,25 @@ class BigAssFan extends EventEmitter {
         )
         this.send(query)
         return returnPromise
+    }
+
+    private registerForResponse(query1: string, query2: string): Promise<FanResponseValue> {
+        let promise: Promise<FanResponseValue> = new Promise(resolve => {
+            this.on("response", (response: string[]) => {
+                if (response[0] !== query1) return
+                if (response[1] !== query2) return
+                resolve(this.convertToFanResponseValue(response[response.length - 1]))
+            })
+        })
+        return promise
+    }
+
+    private convertToFanResponseValue(response: string): FanResponseValue {
+        if (response == "ON") return true
+        if (response == "OFF") return false
+        if (response == "FWD") return false
+        if (response == "REV") return true
+        return Number(response)
     }
 }
 

@@ -31,13 +31,14 @@ class FanController extends EventEmitter {
         setTimeout(() => this.socket.close(), timeout)
     }
 
+    //Assembles query terms into command packet for fan ip
     public send(query: string[], address: string) {
         let command: string = `<${query.join(";")}>`
         let payload = Buffer.from(command)
         this.socket.send(payload, FanController.port, address, this.socketCallback)
         if (this.logTraffic) console.log(`Outgoing: "${command}" => ${address}`)
     }
-
+    //Sends query to all devices on network
     public broadcast(query: string[]) {
         let assembledQuery: string[] = Array.from(query)
         assembledQuery.unshift("ALL")
@@ -48,12 +49,12 @@ class FanController extends EventEmitter {
     public discover() {
         this.broadcast(FanController.commandToFindFans)
     }
-
-    public checkIfDiscovered(identifier: string): boolean {
+    
+    private checkIfDiscovered(identifier: string): boolean {
         return this.discoveredFans.hasOwnProperty(identifier)
     }
 
-    public newFan(identifier: string, query: string[], ip: string) {
+    private newFan(identifier: string, query: string[], ip: string) {
         let mac: string = query[2]
         let deviceModel: string = query[3]
         let isFan: boolean = deviceModel.slice(0,3) == "FAN"
