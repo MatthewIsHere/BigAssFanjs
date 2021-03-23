@@ -79,6 +79,18 @@ class BigAssFan extends EventEmitter {
         return returnPromise
     }
 
+    //Sets fan beep on state change
+    beep(beep?: boolean): Promise<FanResponseValue> {
+        let query: string[] = ["DEVICE", "BEEPER"]
+        let state: string = (beep) ? "ON" : "OFF"
+        query[2] = (beep == undefined) ? "GET" : state
+        let returnPromise: Promise<FanResponseValue> = new Promise(resolve =>
+            this.registerForResponse(query[0], query[1]).then(response => resolve(response))
+        )
+        this.send(query)
+        return returnPromise
+    }
+
     private registerForResponse(query1: string, query2: string): Promise<FanResponseValue> {
         let promise: Promise<FanResponseValue> = new Promise(resolve => {
             this.on("response", (response: string[]) => {
