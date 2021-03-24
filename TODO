@@ -1,4 +1,3 @@
 1. Add Minify after build
 2. (Idea) sort the fans by mac address in discoveredFans so that changed fan names and ip addresses don't interfere with the actual list of fans. Otherwise rename identifier variable to fanName to make less confusing
 3. add fan class function that stringifies the metadata so it can be reimported later or saved to disk. fancontroller add fan class for that too
-4. BIG BAD possible eventemitter memory leak when lots of requests are made. the promise return thingy never destroys its event emitter
