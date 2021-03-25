@@ -1,29 +1,27 @@
 import FanController from "./FanController";
+import EventEmitter from "events"
 
 type FanResponseValue = Number | Boolean
 
-type ResponseCallback = (query: string[], index: number) => void
+type ResponseCallback = (query: string[]) => void
 
-class BigAssFan {
+class BigAssFan extends EventEmitter {
     public readonly name
     public readonly mac
     private readonly ip
     private readonly controller 
-    private responseListeners: ResponseCallback[]
 
     constructor (name: string, mac: string, ip: string, controller: FanController) {
+        super()
         this.name = name
         this.mac = mac
         this.ip = ip
         this.controller = controller
-        this.responseListeners = []
     }
 
     //Function called by controller when a message had arrived
     public receiveMessage(query: string[]) {
-        for (let index = 0; index < this.responseListeners.length; index++) {
-            this.responseListeners[index](query, index)
-        }
+        this.emit("response", query)
     }
 
     //Sends message up to the controller
@@ -98,13 +96,16 @@ class BigAssFan {
 
     private registerForResponse(query1: string, query2: string): Promise<FanResponseValue> {
         let promise: Promise<FanResponseValue> = new Promise(resolve => {
-            let callback: ResponseCallback = (query: string[], index: number) => {
+            let removeCallback = () => {
+                this.off("response", callback)
+            }
+            let callback: ResponseCallback = (query: string[]) => {
                 if (query[0] !== query1) return
                 if (query[1] !== query2) return
-                this.responseListeners.splice(index, 1)
+                removeCallback()
                 resolve(this.convertToFanResponseValue(query[query.length - 1]))
             }
-            this.responseListeners.push(callback)
+            this.on("response", callback)
         })
         return promise
     }
